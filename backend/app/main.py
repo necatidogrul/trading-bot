@@ -14,11 +14,11 @@ def historical_data():
         return jsonify({"error": data["error"]}), 500
     formatted_data = [
         {
-            "time": int(item[0]),      # Zaman damgası
-            "open": float(item[1]),    # Açılış fiyatı
-            "high": float(item[2]),    # En yüksek fiyat
-            "low": float(item[3]),     # En düşük fiyat
-            "close": float(item[4])    # Kapanış fiyatı
+            "time": int(item[0]),
+            "open": float(item[1]),
+            "high": float(item[2]),
+            "low": float(item[3]),
+            "close": float(item[4])
         }
         for item in data
     ]
@@ -29,13 +29,11 @@ def run_backtest():
     try:
         data = request.json
         
-        # Parametreleri al
         symbol = data.get('symbol', 'BTCUSDT')
         interval = data.get('interval', '1m')
         start_date = datetime.fromisoformat(data['startDate'].replace('Z', '+00:00'))
         end_date = datetime.fromisoformat(data['endDate'].replace('Z', '+00:00'))
         
-        # İndikatör parametreleri
         initial_params = {
             'bb_length': int(data.get('bbLength', 20)),
             'bb_std': float(data.get('bbStd', 2)),
@@ -48,7 +46,6 @@ def run_backtest():
             'sma_length': int(data.get('smaLength', 50))
         }
         
-        # Backtest çalıştır
         results = backtest(symbol, interval, start_date, end_date, initial_params)
         
         return jsonify(results)

@@ -1,8 +1,9 @@
 import React from 'react';
+import { ThemeProvider, CssBaseline, Container, Box, Tab, Tabs, Paper } from '@mui/material';
 import CryptoChart from './components/CryptoChart';
 import TradingSimulator from './components/TradingSimulator';
 import BacktestResults from './components/BacktestResults';
-import { Box, Tab, Tabs } from '@mui/material';
+import { theme } from './theme';
 
 function App() {
   const [currentTab, setCurrentTab] = React.useState(0);
@@ -12,37 +13,54 @@ function App() {
   };
 
   return (
-    <div style={{ backgroundColor: '#131722', minHeight: '100vh', padding: '20px' }}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-        <Tabs 
-          value={currentTab} 
-          onChange={handleTabChange}
-          sx={{
-            '& .MuiTab-root': { color: '#fff' },
-            '& .Mui-selected': { color: '#26a69a' },
-            '& .MuiTabs-indicator': { backgroundColor: '#26a69a' }
-          }}
-        >
-          <Tab label="Live Trading" />
-          <Tab label="Backtest" />
-        </Tabs>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Box sx={{ 
+        minHeight: '100vh',
+        backgroundColor: 'background.default',
+        py: 3
+      }}>
+        <Container maxWidth="xl">
+          <Paper elevation={0} sx={{ 
+            p: 3,
+            backgroundColor: 'background.paper',
+            borderRadius: 2
+          }}>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+              <Tabs 
+                value={currentTab} 
+                onChange={handleTabChange}
+                sx={{
+                  '& .MuiTab-root': { 
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    px: 4
+                  }
+                }}
+              >
+                <Tab label="Live Trading" />
+                <Tab label="Backtest" />
+              </Tabs>
+            </Box>
+
+            {currentTab === 0 && (
+              <Box sx={{ display: 'grid', gap: 3 }}>
+                <Box>
+                  <CryptoChart />
+                </Box>
+                <Box>
+                  <TradingSimulator />
+                </Box>
+              </Box>
+            )}
+
+            {currentTab === 1 && (
+              <BacktestResults />
+            )}
+          </Paper>
+        </Container>
       </Box>
-
-      {currentTab === 0 && (
-        <>
-          <div style={{ marginBottom: '20px' }}>
-            <CryptoChart />
-          </div>
-          <div>
-            <TradingSimulator />
-          </div>
-        </>
-      )}
-
-      {currentTab === 1 && (
-        <BacktestResults />
-      )}
-    </div>
+    </ThemeProvider>
   );
 }
 

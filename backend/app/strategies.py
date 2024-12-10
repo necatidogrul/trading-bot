@@ -13,12 +13,10 @@ def apply_strategy(symbol, strategy, data, strategy_params=None):
         strategy_params = strategy_params or {}
         is_custom = strategy_params.get('is_custom', False)
         
-        # Use custom values only if they are applied
         if is_custom:
             rsi_oversold = strategy_params.get('rsi_oversold', 30)
             rsi_overbought = strategy_params.get('rsi_overbought', 70)
         else:
-            # Default values if custom settings are not applied
             rsi_oversold = 30
             rsi_overbought = 70
         

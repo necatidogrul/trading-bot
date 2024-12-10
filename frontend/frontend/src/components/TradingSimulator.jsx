@@ -1,6 +1,33 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import TradingBot from './TradingBot';
+import {
+  Box,
+  Paper,
+  Typography,
+  Button,
+  Grid,
+  Card,
+  CardContent,
+  Select,
+  MenuItem,
+  TextField,
+  Chip,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  IconButton,
+  Tooltip,
+} from '@mui/material';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 
 function TradingSimulator() {
   const [balance, setBalance] = useState(10000);
@@ -9,12 +36,10 @@ function TradingSimulator() {
   const [currentPrice, setCurrentPrice] = useState(0);
   const [pnl, setPnl] = useState({ total: 0, percentage: 0 });
   const [totalPnL, setTotalPnL] = useState(0);
-  const ws = useRef(null);
-
   const [trades, setTrades] = useState([]);
   const [orderAmount, setOrderAmount] = useState(100);
-
   const [isBotActive, setIsBotActive] = useState(false);
+  const ws = useRef(null);
 
   const coins = ['BTCUSDT', 'ETHUSDT', 'AVAXUSDT', 'SOLUSDT', 'RENDERUSDT', 'FETUSDT'];
 
@@ -170,129 +195,250 @@ function TradingSimulator() {
   };
 
   return (
-    <div className="trading-simulator" style={{ padding: '20px', backgroundColor: '#131722', color: '#fff' }}>
-      <div className="trading-info" style={{ marginBottom: '20px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2>Trading Simulator</h2>
-          <button
+    <Box sx={{ width: '100%' }}>
+      <Paper elevation={0} sx={{ p: 3, backgroundColor: 'background.paper', borderRadius: 2 }}>
+        {/* Header Section */}
+        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h5" component="h1" sx={{ fontWeight: 600 }}>
+            Trading Simulator
+          </Typography>
+          <Button
+            variant="contained"
+            color={isBotActive ? 'error' : 'success'}
+            startIcon={<SmartToyIcon />}
             onClick={() => setIsBotActive(!isBotActive)}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: isBotActive ? '#ef5350' : '#26a69a',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
           >
             {isBotActive ? 'Stop Bot' : 'Start Bot'}
-          </button>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-          <div>Balance: ${balance.toFixed(2)} USDT</div>
-          <div>Current Price: ${currentPrice.toFixed(2)}</div>
-          <div style={{ color: totalPnL >= 0 ? '#26a69a' : '#ef5350' }}>
-            Total P&L: ${totalPnL.toFixed(2)}
-          </div>
-        </div>
+          </Button>
+        </Box>
+
+        {/* Main Stats Cards */}
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid item xs={12} md={4}>
+            <Card variant="outlined">
+              <CardContent>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                  <AccountBalanceWalletIcon color="primary" />
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Balance
+                  </Typography>
+                </Stack>
+                <Typography variant="h5">
+                  ${balance.toFixed(2)} USDT
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Card variant="outlined">
+              <CardContent>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                  <ShowChartIcon color="primary" />
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Current Price
+                  </Typography>
+                </Stack>
+                <Typography variant="h5">
+                  ${currentPrice.toFixed(2)}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Card variant="outlined">
+              <CardContent>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                  {totalPnL >= 0 ? (
+                    <TrendingUpIcon color="success" />
+                  ) : (
+                    <TrendingDownIcon color="error" />
+                  )}
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Total P&L
+                  </Typography>
+                </Stack>
+                <Typography 
+                  variant="h5" 
+                  color={totalPnL >= 0 ? 'success.main' : 'error.main'}
+                >
+                  ${totalPnL.toFixed(2)}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Trading Controls */}
+        <Card variant="outlined" sx={{ mb: 3 }}>
+          <CardContent>
+            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+              Trading Controls
+            </Typography>
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={12} md={4}>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  Select Coin
+                </Typography>
+                <Select
+                  fullWidth
+                  value={selectedCoin}
+                  onChange={(e) => setSelectedCoin(e.target.value)}
+                  size="small"
+                >
+                  {coins.map((coin) => (
+                    <MenuItem key={coin} value={coin}>{coin}</MenuItem>
+                  ))}
+                </Select>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  Order Amount (USDT)
+                </Typography>
+                <TextField
+                  fullWidth
+                  type="number"
+                  value={orderAmount}
+                  onChange={(e) => setOrderAmount(Number(e.target.value))}
+                  size="small"
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Stack direction="row" spacing={1}>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    fullWidth
+                    onClick={placeBuyOrder}
+                    startIcon={<TrendingUpIcon />}
+                  >
+                    Buy
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    fullWidth
+                    onClick={placeSellOrder}
+                    startIcon={<TrendingDownIcon />}
+                  >
+                    Sell
+                  </Button>
+                </Stack>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+
+        {/* Portfolio Section */}
         {portfolio[selectedCoin] && (
-          <div style={{ 
-            padding: '10px', 
-            backgroundColor: '#2a2e39', 
-            borderRadius: '5px',
-            marginBottom: '10px'
-          }}>
-            <h3>{selectedCoin} Position</h3>
-            <div>Amount: {portfolio[selectedCoin].amount.toFixed(8)}</div>
-            <div>Average Price: ${portfolio[selectedCoin].averagePrice.toFixed(2)}</div>
-            <div style={{ color: pnl.total >= 0 ? '#26a69a' : '#ef5350' }}>
-              Position P&L: ${pnl.total.toFixed(2)} ({pnl.percentage.toFixed(2)}%)
-            </div>
-          </div>
+          <Card variant="outlined" sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+                Current Position
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={6} md={3}>
+                  <Typography variant="body2" color="text.secondary">
+                    Amount
+                  </Typography>
+                  <Typography variant="h6">
+                    {portfolio[selectedCoin].amount.toFixed(6)}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6} md={3}>
+                  <Typography variant="body2" color="text.secondary">
+                    Average Price
+                  </Typography>
+                  <Typography variant="h6">
+                    ${portfolio[selectedCoin].averagePrice.toFixed(2)}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6} md={3}>
+                  <Typography variant="body2" color="text.secondary">
+                    Total Cost
+                  </Typography>
+                  <Typography variant="h6">
+                    ${portfolio[selectedCoin].totalCost.toFixed(2)}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6} md={3}>
+                  <Typography variant="body2" color="text.secondary">
+                    Unrealized P&L
+                  </Typography>
+                  <Typography 
+                    variant="h6"
+                    color={pnl.total >= 0 ? 'success.main' : 'error.main'}
+                  >
+                    ${pnl.total.toFixed(2)} ({pnl.percentage.toFixed(2)}%)
+                  </Typography>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
         )}
-      </div>
 
-      <div className="controls" style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-        <select 
-          value={selectedCoin} 
-          onChange={(e) => setSelectedCoin(e.target.value)}
-          style={{ padding: '5px', backgroundColor: '#2a2e39', color: '#fff', border: '1px solid #363c4e' }}
-        >
-          {coins.map(coin => (
-            <option key={coin} value={coin}>{coin}</option>
-          ))}
-        </select>
+        {/* Trade History */}
+        <Card variant="outlined">
+          <CardContent>
+            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+              Trade History
+            </Typography>
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Type</TableCell>
+                    <TableCell>Price</TableCell>
+                    <TableCell>Amount</TableCell>
+                    <TableCell>Total</TableCell>
+                    {/* <TableCell>P&L</TableCell> */}
+                    <TableCell>Time</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {trades.map((trade, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <Chip
+                          label={trade.type}
+                          size="small"
+                          color={trade.type === 'BUY' ? 'success' : 'error'}
+                        />
+                      </TableCell>
+                      <TableCell>${trade.price.toFixed(2)}</TableCell>
+                      <TableCell>{trade.amount.toFixed(6)}</TableCell>
+                      <TableCell>${trade.total.toFixed(2)}</TableCell>
+                      {/* <TableCell>
+                        <Typography
+                          color={trade.currentPnL >= 0 ? 'success.main' : 'error.main'}
+                        >
+                          ${(trade.currentPnL || trade.realizedPnL || 0).toFixed(2)}
+                        </Typography>
+                      </TableCell> */}
+                      <TableCell>
+                        {new Date(trade.timestamp).toLocaleTimeString()}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </CardContent>
+        </Card>
 
-        <input
-          type="number"
-          value={orderAmount}
-          onChange={(e) => setOrderAmount(Number(e.target.value))}
-          placeholder="Order Amount (USDT)"
-          style={{ padding: '5px', backgroundColor: '#2a2e39', color: '#fff', border: '1px solid #363c4e' }}
-        />
-
-        <button 
-          onClick={placeBuyOrder}
-          style={{ padding: '5px 15px', backgroundColor: '#26a69a', color: '#fff', border: 'none', cursor: 'pointer' }}
-        >
-          Buy
-        </button>
-        <button 
-          onClick={placeSellOrder}
-          style={{ padding: '5px 15px', backgroundColor: '#ef5350', color: '#fff', border: 'none', cursor: 'pointer' }}
-        >
-          Sell
-        </button>
-      </div>
-
-      {isBotActive && (
-        <TradingBot
-          selectedCoin={selectedCoin}
-          currentPrice={currentPrice}
-          onBuy={placeBuyOrder}
-          onSell={placeSellOrder}
-          isActive={isBotActive}
-          orderAmount={orderAmount}
-        />
-      )}
-
-      <div className="trades" style={{ marginTop: '20px' }}>
-        <h3>Recent Trades</h3>
-        <div style={{ maxHeight: '300px', overflow: 'auto' }}>
-          {trades.map((trade, index) => (
-            <div 
-              key={index}
-              style={{ 
-                padding: '10px',
-                backgroundColor: '#2a2e39',
-                marginBottom: '5px',
-                borderLeft: `4px solid ${trade.type === 'BUY' ? '#26a69a' : '#ef5350'}`
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div>
-                  {trade.type} {trade.coin}: {trade.amount.toFixed(8)} @ ${trade.price.toFixed(2)}
-                </div>
-                <div>
-                  Total: ${trade.total.toFixed(2)}
-                </div>
-              </div>
-              <div style={{ 
-                marginTop: '5px',
-                color: trade.type === 'SELL' 
-                  ? (trade.realizedPnL >= 0 ? '#26a69a' : '#ef5350')
-                  : (trade.currentPnL >= 0 ? '#26a69a' : '#ef5350')
-              }}>
-                {trade.type === 'SELL' 
-                  ? `Realized P&L: $${trade.realizedPnL.toFixed(2)} (${trade.pnlPercentage.toFixed(2)}%)`
-                  : `Unrealized P&L: $${trade.currentPnL?.toFixed(2)} (${trade.pnlPercentage?.toFixed(2)}%)`
-                }
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
+        {/* Trading Bot Section */}
+        {isBotActive && (
+          <Box sx={{ mt: 3 }}>
+            <TradingBot
+              selectedCoin={selectedCoin}
+              currentPrice={currentPrice}
+              onBuy={placeBuyOrder}
+              onSell={placeSellOrder}
+              orderAmount={orderAmount}
+            />
+          </Box>
+        )}
+      </Paper>
+    </Box>
   );
 }
 

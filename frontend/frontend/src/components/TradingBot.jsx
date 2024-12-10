@@ -1,4 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Box, 
+  Paper, 
+  Typography, 
+  Button, 
+  Slider, 
+  Grid,
+  Card,
+  CardContent,
+  Chip,
+  Stack,
+  Divider,
+  IconButton,
+  Tooltip
+} from '@mui/material';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import StopIcon from '@mui/icons-material/Stop';
+import SettingsIcon from '@mui/icons-material/Settings';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 
 function TradingBot({ 
     selectedCoin,
@@ -242,204 +262,219 @@ function TradingBot({
     }, [currentPrice, botState]);
 
     return (
-        <div className="trading-bot">
-            {botState === 'idle' && (
-                <button 
-                    onClick={startConfiguration}
-                    style={{
-                        padding: '10px 20px',
-                        backgroundColor: '#4CAF50',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        width: '100%',
-                        fontSize: '16px'
-                    }}
-                >
-                    Configure Trading Bot
-                </button>
-            )}
+        <Box sx={{ width: '100%' }}>
+            <Paper 
+                elevation={0}
+                sx={{ 
+                    p: 3,
+                    backgroundColor: 'background.paper',
+                    borderRadius: 2
+                }}
+            >
+                {/* Header Section */}
+                <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="h6" component="h2" sx={{ fontWeight: 600 }}>
+                        Trading Bot {selectedCoin && `- ${selectedCoin}`}
+                    </Typography>
+                    <Chip 
+                        label={botState.charAt(0).toUpperCase() + botState.slice(1)}
+                        color={
+                            botState === 'running' ? 'success' :
+                            botState === 'configuring' ? 'warning' :
+                            botState === 'ready' ? 'info' : 'default'
+                        }
+                        size="small"
+                    />
+                </Box>
 
-            {botState === 'configuring' && (
-                <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#2a2a2a', borderRadius: '8px' }}>
-                    <h3 style={{ color: '#fff', marginBottom: '15px' }}>Bot Settings</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                        <div>
-                            <label style={{ color: '#fff', display: 'block', marginBottom: '5px' }}>
-                                RSI Oversold (Buy) Level:
-                            </label>
-                            <input
-                                type="number"
-                                min="0"
-                                max="100"
-                                value={botSettings.rsiOversold}
-                                onChange={(e) => handleBotSettingChange('rsiOversold', e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '8px',
-                                    borderRadius: '4px',
-                                    border: '1px solid #444',
-                                    backgroundColor: '#1a1a1a',
-                                    color: '#fff'
-                                }}
-                            />
-                        </div>
-                        <div>
-                            <label style={{ color: '#fff', display: 'block', marginBottom: '5px' }}>
-                                RSI Overbought (Sell) Level:
-                            </label>
-                            <input
-                                type="number"
-                                min="0"
-                                max="100"
-                                value={botSettings.rsiOverbought}
-                                onChange={(e) => handleBotSettingChange('rsiOverbought', e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '8px',
-                                    borderRadius: '4px',
-                                    border: '1px solid #444',
-                                    backgroundColor: '#1a1a1a',
-                                    color: '#fff'
-                                }}
-                            />
-                        </div>
-                    </div>
-                    <button 
-                        onClick={confirmSettings}
-                        style={{
-                            marginTop: '15px',
-                            padding: '10px 20px',
-                            backgroundColor: '#4CAF50',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            width: '100%',
-                            fontSize: '16px'
-                        }}
+                {/* Bot Controls */}
+                <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
+                    <Button
+                        variant="contained"
+                        startIcon={<SettingsIcon />}
+                        onClick={startConfiguration}
+                        disabled={botState !== 'idle'}
+                        sx={{ flex: 1 }}
                     >
-                        Confirm Settings
-                    </button>
-                </div>
-            )}
-
-            {botState === 'ready' && (
-                <div>
-                    <div style={{
-                        marginTop: '15px',
-                        padding: '10px',
-                        backgroundColor: '#2a2a2a',
-                        borderRadius: '4px',
-                        color: '#fff',
-                        marginBottom: '15px'
-                    }}>
-                        <h4 style={{ margin: '0 0 10px 0' }}>Confirmed Settings:</h4>
-                        <div>Buy when RSI below: {botSettings.rsiOversold}</div>
-                        <div>Sell when RSI above: {botSettings.rsiOverbought}</div>
-                    </div>
-                    <button 
+                        Configure
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        startIcon={<PlayArrowIcon />}
                         onClick={startTrading}
-                        style={{
-                            padding: '10px 20px',
-                            backgroundColor: '#2196F3',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            width: '100%',
-                            fontSize: '16px'
-                        }}
+                        disabled={botState !== 'ready'}
+                        sx={{ flex: 1 }}
                     >
                         Start Trading
-                    </button>
-                </div>
-            )}
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="error"
+                        startIcon={<StopIcon />}
+                        onClick={() => setBotState('idle')}
+                        disabled={botState !== 'running'}
+                        sx={{ flex: 1 }}
+                    >
+                        Stop
+                    </Button>
+                </Stack>
 
-            {botState === 'running' && (
-                <div style={{ marginTop: '15px', color: '#fff' }}>
-                    <h4>Active Trading Bot Status:</h4>
-                    <div style={{ 
-                        backgroundColor: '#2a2a2a',
-                        padding: '10px',
-                        borderRadius: '4px',
-                        marginBottom: '10px'
-                    }}>
-                        <div>Buy Level (Oversold): {indicators.rsi.oversold}</div>
-                        <div>Sell Level (Overbought): {indicators.rsi.overbought}</div>
-                        <div>Current RSI: {indicators.rsi.value ? indicators.rsi.value.toFixed(2) : 'Calculating...'}</div>
-                    </div>
-                    <div style={{ 
-                        backgroundColor: '#2a2e39', 
-                        padding: '15px',
-                        borderRadius: '5px',
-                        marginTop: '20px'
-                    }}>
-                        <h3 style={{ color: '#fff', marginBottom: '15px' }}>Trading Bot Status</h3>
-                        
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                            <div style={{ color: '#fff' }}>
-                                <div>Total Trades: {botStats.totalTrades}</div>
-                                <div>Winning Trades: {botStats.winningTrades}</div>
-                                <div>Losing Trades: {botStats.losingTrades}</div>
-                                <div style={{ color: botStats.totalProfit >= 0 ? '#26a69a' : '#ef5350' }}>
-                                    Total Profit: ${botStats.totalProfit.toFixed(2)}
-                                </div>
-                            </div>
-                            
-                            <div style={{ color: '#fff' }}>
-                                <div>Current Position: {botStats.position || 'None'}</div>
-                                {botStats.position && (
-                                    <div>Entry Price: ${botStats.entryPrice.toFixed(2)}</div>
-                                )}
-                                {botStats.lastTradeResult !== null && (
-                                    <div style={{ 
-                                        color: botStats.lastTradeResult >= 0 ? '#26a69a' : '#ef5350'
-                                    }}>
-                                        Last Trade: ${botStats.lastTradeResult.toFixed(2)}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                {/* Configuration Section */}
+                {botState === 'configuring' && (
+                    <Card variant="outlined" sx={{ mb: 3 }}>
+                        <CardContent>
+                            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+                                Bot Settings
+                            </Typography>
+                            <Grid container spacing={3}>
+                                <Grid item xs={12} md={6}>
+                                    <Typography gutterBottom>
+                                        RSI Oversold Level
+                                    </Typography>
+                                    <Slider
+                                        value={botSettings.rsiOversold}
+                                        onChange={(e, value) => handleBotSettingChange('rsiOversold', value)}
+                                        min={0}
+                                        max={100}
+                                        valueLabelDisplay="auto"
+                                    />
+                                </Grid>
+                                <Grid item xs={12} md={6}>
+                                    <Typography gutterBottom>
+                                        RSI Overbought Level
+                                    </Typography>
+                                    <Slider
+                                        value={botSettings.rsiOverbought}
+                                        onChange={(e, value) => handleBotSettingChange('rsiOverbought', value)}
+                                        min={0}
+                                        max={100}
+                                        valueLabelDisplay="auto"
+                                    />
+                                </Grid>
+                            </Grid>
+                            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                                <Button
+                                    variant="contained"
+                                    onClick={confirmSettings}
+                                    color="primary"
+                                >
+                                    Confirm Settings
+                                </Button>
+                            </Box>
+                        </CardContent>
+                    </Card>
+                )}
 
-                        <div style={{ marginTop: '15px', color: '#fff' }}>
-                            <h4>Current Indicators:</h4>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginTop: '10px' }}>
-                                <div>
-                                    <div>RSI: {indicators.rsi.value?.toFixed(2) || 'N/A'}</div>
-                                    <div style={{ 
-                                        color: indicators.rsi.value > indicators.rsi.overbought 
-                                            ? '#ef5350' 
-                                            : indicators.rsi.value < indicators.rsi.oversold 
-                                                ? '#26a69a' 
-                                                : '#fff'
-                                    }}>
-                                        Status: {
-                                            indicators.rsi.value > indicators.rsi.overbought 
-                                                ? 'Overbought' 
-                                                : indicators.rsi.value < indicators.rsi.oversold 
-                                                    ? 'Oversold' 
-                                                    : 'Neutral'
-                                        }
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <div>MACD: {indicators.macd.value?.toFixed(4) || 'N/A'}</div>
-                                    <div>Signal: {indicators.macd.signalValue?.toFixed(4) || 'N/A'}</div>
-                                </div>
-                                
-                                <div>
-                                    <div>BB Upper: {indicators.bollinger.upper?.toFixed(2) || 'N/A'}</div>
-                                    <div>BB Lower: {indicators.bollinger.lower?.toFixed(2) || 'N/A'}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
+                {/* Stats Section */}
+                <Grid container spacing={2}>
+                    <Grid item xs={12} md={6}>
+                        <Card variant="outlined">
+                            <CardContent>
+                                <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+                                    Performance Metrics
+                                </Typography>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={6}>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Total Trades
+                                        </Typography>
+                                        <Typography variant="h6">
+                                            {botStats.totalTrades}
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Total Profit
+                                        </Typography>
+                                        <Typography 
+                                            variant="h6" 
+                                            color={botStats.totalProfit >= 0 ? 'success.main' : 'error.main'}
+                                        >
+                                            {botStats.totalProfit?.toFixed(2) || '0.00'}
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Win Rate
+                                        </Typography>
+                                        <Typography variant="h6">
+                                            {botStats.totalTrades > 0 
+                                                ? ((botStats.winningTrades / botStats.totalTrades) * 100).toFixed(1)
+                                                : '0'}%
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Current Position
+                                        </Typography>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            {botStats.position ? (
+                                                <Chip 
+                                                    icon={<TrendingUpIcon />}
+                                                    label="LONG"
+                                                    color="success"
+                                                    size="small"
+                                                />
+                                            ) : (
+                                                <Chip 
+                                                    label="NO POSITION"
+                                                    variant="outlined"
+                                                    size="small"
+                                                />
+                                            )}
+                                        </Box>
+                                    </Grid>
+                                </Grid>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                        <Card variant="outlined">
+                            <CardContent>
+                                <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+                                    Technical Indicators
+                                </Typography>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={6}>
+                                        <Typography variant="body2" color="text.secondary">
+                                            RSI
+                                        </Typography>
+                                        <Typography variant="h6">
+                                            {indicators.rsi.value?.toFixed(2) || 'N/A'}
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <Typography variant="body2" color="text.secondary">
+                                            MACD
+                                        </Typography>
+                                        <Typography variant="h6">
+                                            {indicators.macd.value?.toFixed(2) || 'N/A'}
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Bollinger Upper
+                                        </Typography>
+                                        <Typography variant="h6">
+                                            {indicators.bollinger.upper?.toFixed(2) || 'N/A'}
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Bollinger Lower
+                                        </Typography>
+                                        <Typography variant="h6">
+                                            {indicators.bollinger.lower?.toFixed(2) || 'N/A'}
+                                        </Typography>
+                                    </Grid>
+                                </Grid>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                </Grid>
+            </Paper>
+        </Box>
     );
 }
 

@@ -1,6 +1,37 @@
 import React, { useEffect, useState, useRef } from "react";
 import Plot from "react-plotly.js";
 import axios from "axios";
+import {
+    Box,
+    Paper,
+    Typography,
+    Select,
+    MenuItem,
+    Stack,
+    Card,
+    CardContent,
+    ButtonGroup,
+    Button,
+    Grid,
+} from '@mui/material';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
+import TimelineIcon from '@mui/icons-material/Timeline';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+
+const INTERVALS = [
+    { value: '1m', label: '1 Minute' },
+    { value: '5m', label: '5 Minutes' },
+    { value: '15m', label: '15 Minutes' },
+    { value: '1h', label: '1 Hour' },
+    { value: '1d', label: '1 Day' },
+];
+
+const TRADING_PAIRS = [
+    { value: 'btcusdt', label: 'BTC/USDT' },
+    { value: 'ethusdt', label: 'ETH/USDT' },
+    { value: 'avaxusdt', label: 'AVAX/USDT' },
+];
 
 function CryptoChart() {
     const [chartData, setChartData] = useState({
@@ -15,6 +46,7 @@ function CryptoChart() {
     const [symbol, setSymbol] = useState("btcusdt");
     const [interval, setIntervalValue] = useState("15m");
     const [currentPrice, setCurrentPrice] = useState(0);
+    const [previousPrice, setPreviousPrice] = useState(0);
     const ws = useRef(null);
 
     const fetchHistoricalData = async () => {
@@ -58,7 +90,8 @@ function CryptoChart() {
 
             if (message.k) {
                 const kline = message.k;
-                setCurrentPrice(parseFloat(kline.c));
+                const newPrice = parseFloat(kline.c);
+                handlePriceUpdate(newPrice);
                 setChartData((prevData) => {
                     const updatedTime = [...prevData.time, new Date(kline.t)];
                     const updatedOpen = [...prevData.open, parseFloat(kline.o)];
@@ -80,6 +113,11 @@ function CryptoChart() {
         };
     };
 
+    const handlePriceUpdate = (newPrice) => {
+        setPreviousPrice(currentPrice);
+        setCurrentPrice(newPrice);
+    };
+
     useEffect(() => {
         fetchHistoricalData().then(() => {
             startWebSocket();
@@ -92,87 +130,174 @@ function CryptoChart() {
         };
     }, [symbol, interval]);
 
+    const isPriceUp = currentPrice >= previousPrice;
+
     return (
-        <div style={{ width: '100%', backgroundColor: '#131722' }}>
-            <h1 style={{ textAlign: 'center', color: '#fff', margin: '0 0 20px 0' }}>Binance Style Crypto Chart</h1>
-            <div style={{ textAlign: 'center', color: '#26a69a', fontSize: '24px', marginBottom: '10px' }}>
-                Current Price: ${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </div>
-            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                <select
-                    value={symbol}
-                    onChange={(e) => setSymbol(e.target.value)}
-                    style={{ marginRight: '10px', padding: '10px', backgroundColor: '#2a2e39', color: '#fff', border: '1px solid #363c4e' }}
-                >
-                    <option value="btcusdt">BTC/USDT</option>
-                    <option value="ethusdt">ETH/USDT</option>
-                    <option value="avaxusdt">AVAX/USDT</option>
-                </select>
-                <select
-                    value={interval}
-                    onChange={(e) => setIntervalValue(e.target.value)}
-                    style={{ padding: '10px', backgroundColor: '#2a2e39', color: '#fff', border: '1px solid #363c4e' }}
-                >
-                    <option value="1m">1 Minute</option>
-                    <option value="5m">5 Minutes</option>
-                    <option value="15m">15 Minutes</option>
-                    <option value="1h">1 Hour</option>
-                    <option value="1d">1 Day</option>
-                </select>
-            </div>
-            <Plot
-                data={[
-                    {
-                        x: chartData.time,
-                        open: chartData.open,
-                        high: chartData.high,
-                        low: chartData.low,
-                        close: chartData.close,
-                        type: "candlestick",
-                        name: "Price",
-                        increasing: { line: { color: "#26a69a" } },
-                        decreasing: { line: { color: "#ef5350" } },
-                    },
-                    {
-                        x: chartData.time,
-                        y: chartData.volume,
-                        type: "bar",
-                        name: "Volume",
-                        yaxis: "y2",
-                        marker: { color: "#636efa" },
-                    },
-                ]}
-                layout={{
-                    height: 600,
-                    xaxis: {
-                        title: "Time",
-                        type: "date",
-                        rangeslider: { visible: true },
-                        showgrid: true,
-                        gridcolor: "#363c4e",
-                        tickformat: interval === "1d" ? "%Y-%m-%d" : "%H:%M:%S",
-                    },
-                    yaxis: {
-                        title: "Price",
-                        showgrid: true,
-                        gridcolor: "#363c4e",
-                        autorange: true,
-                    },
-                    yaxis2: {
-                        title: "Volume",
-                        overlaying: "y",
-                        side: "right",
-                        showgrid: false,
-                    },
-                    plot_bgcolor: "#131722",
-                    paper_bgcolor: "#131722",
-                    font: { color: "#fff" },
-                    title: `${symbol.toUpperCase()} ${interval.toUpperCase()} Candlestick Chart`,
+        <Box sx={{ width: '100%' }}>
+            <Paper 
+                elevation={0} 
+                sx={{ 
+                    p: 3, 
+                    backgroundColor: 'background.paper',
+                    borderRadius: 2
                 }}
-                style={{ width: '100%' }}
-                useResizeHandler
-            />
-        </div>
+            >
+                {/* Header with Price */}
+                <Grid container spacing={3} sx={{ mb: 3 }}>
+                    <Grid item xs={12} md={6}>
+                        <Card variant="outlined">
+                            <CardContent>
+                                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                                    <ShowChartIcon color="primary" />
+                                    <Typography variant="subtitle2" color="text.secondary">
+                                        Current Price
+                                    </Typography>
+                                </Stack>
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                    <Typography 
+                                        variant="h4"
+                                        color={isPriceUp ? 'success.main' : 'error.main'}
+                                        sx={{ fontWeight: 600 }}
+                                    >
+                                        ${currentPrice.toLocaleString(undefined, { 
+                                            minimumFractionDigits: 2, 
+                                            maximumFractionDigits: 2 
+                                        })}
+                                    </Typography>
+                                    {isPriceUp ? (
+                                        <TrendingUpIcon color="success" />
+                                    ) : (
+                                        <TrendingDownIcon color="error" />
+                                    )}
+                                </Stack>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+
+                    {/* Trading Controls */}
+                    <Grid item xs={12} md={6}>
+                        <Card variant="outlined">
+                            <CardContent>
+                                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+                                    <TimelineIcon color="primary" />
+                                    <Typography variant="subtitle2" color="text.secondary">
+                                        Chart Controls
+                                    </Typography>
+                                </Stack>
+                                <Stack direction="row" spacing={2}>
+                                    <Select
+                                        size="small"
+                                        value={symbol}
+                                        onChange={(e) => setSymbol(e.target.value)}
+                                        sx={{ minWidth: 120 }}
+                                    >
+                                        {TRADING_PAIRS.map(pair => (
+                                            <MenuItem key={pair.value} value={pair.value}>
+                                                {pair.label}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                    <ButtonGroup size="small">
+                                        {INTERVALS.map(int => (
+                                            <Button
+                                                key={int.value}
+                                                variant={interval === int.value ? 'contained' : 'outlined'}
+                                                onClick={() => setIntervalValue(int.value)}
+                                            >
+                                                {int.value}
+                                            </Button>
+                                        ))}
+                                    </ButtonGroup>
+                                </Stack>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                </Grid>
+
+                {/* Chart */}
+                <Card variant="outlined">
+                    <CardContent>
+                        <Plot
+                            data={[
+                                {
+                                    x: chartData.time,
+                                    open: chartData.open,
+                                    high: chartData.high,
+                                    low: chartData.low,
+                                    close: chartData.close,
+                                    type: "candlestick",
+                                    name: "Price",
+                                    increasing: { line: { color: "#26a69a" } },
+                                    decreasing: { line: { color: "#ef5350" } },
+                                },
+                                {
+                                    x: chartData.time,
+                                    y: chartData.volume,
+                                    type: "bar",
+                                    name: "Volume",
+                                    yaxis: "y2",
+                                    marker: {
+                                        color: chartData.close.map((close, i) => 
+                                            (i > 0 ? close >= chartData.close[i-1] : true) 
+                                                ? 'rgba(38, 166, 154, 0.3)' 
+                                                : 'rgba(239, 83, 80, 0.3)'
+                                        )
+                                    },
+                                },
+                            ]}
+                            layout={{
+                                height: 600,
+                                margin: { t: 40, r: 60, l: 60, b: 40 },
+                                xaxis: {
+                                    title: "Time",
+                                    type: "date",
+                                    rangeslider: { visible: false },
+                                    showgrid: true,
+                                    gridcolor: "#363c4e",
+                                    tickformat: interval === "1d" ? "%Y-%m-%d" : "%H:%M:%S",
+                                },
+                                yaxis: {
+                                    title: "Price",
+                                    showgrid: true,
+                                    gridcolor: "#363c4e",
+                                    autorange: true,
+                                    tickformat: ",.2f",
+                                },
+                                yaxis2: {
+                                    title: "Volume",
+                                    overlaying: "y",
+                                    side: "right",
+                                    showgrid: false,
+                                },
+                                plot_bgcolor: "#131722",
+                                paper_bgcolor: "#131722",
+                                font: { color: "#fff", family: "Inter" },
+                                modebar: {
+                                    bgcolor: 'rgba(0,0,0,0)',
+                                    color: '#fff',
+                                    activecolor: '#26a69a'
+                                },
+                                hoverlabel: {
+                                    bgcolor: '#2a2e39',
+                                    font: { family: 'Inter', color: '#fff' }
+                                },
+                            }}
+                            style={{ width: '100%' }}
+                            useResizeHandler
+                            config={{
+                                displayModeBar: true,
+                                displaylogo: false,
+                                modeBarButtonsToRemove: [
+                                    'select2d',
+                                    'lasso2d',
+                                    'autoScale2d',
+                                ],
+                            }}
+                        />
+                    </CardContent>
+                </Card>
+            </Paper>
+        </Box>
     );
 }
 

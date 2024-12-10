@@ -7,7 +7,7 @@ def fetch_historical_data(symbol, interval):
     params = {
         "symbol": symbol,
         "interval": interval,
-        "limit": 1000  # Daha fazla veri çek
+        "limit": 1000 
     }
     response = requests.get(endpoint, params=params)
     if response.status_code == 200:
